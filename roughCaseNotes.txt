@@ -1,0 +1,659 @@
+Thought process & case notes
+
+ROTMAN INTERACTIVE TRADER
+Trading Case Competition
+Internal Desk Notes + Execution Playbook
+
+1. Platform Setup and Environment
+Software and Access
+Download and install Rotman Interactive Trader (RIT).
+
+
+Practice servers run 24/7.
+
+
+Access via:
+
+
+Rotman Finance Lab website link used during registration, or
+
+
+Direct login link from confirmation email.
+
+
+Practice environment is identical in mechanics to competition runs.
+
+
+Workspace Configuration
+Open and save the following windows:
+
+
+Portfolio window
+
+
+Order Book
+
+
+Buy/Sell Entry
+
+
+Book Trader
+
+
+Save workspace immediately after setup to avoid reconfiguration delays.
+
+
+Competition Structure
+Total teams: 26
+
+
+Each partner operates on their own machine.
+
+
+Final team score is the aggregate of individual performances.
+
+
+Each case is run 3–5 times, final rankings are based on aggregate and average results.
+
+
+
+2. Core Rules and Constraints
+Absolute Constraints
+No speculation
+
+
+No technical analysis
+
+
+No directional prediction
+
+
+Market prices follow a random walk.
+
+
+Any speculative behavior results in heavy fines and P&L degradation.
+
+
+Key Implication
+Edge comes from structure, execution, and risk control, not forecasting.
+
+
+
+3. Market Structure Overview
+Roles in the Market
+Market Makers
+
+
+Provide liquidity.
+
+
+Sit on the left side of the order book.
+
+
+Market Takers
+
+
+Consume liquidity.
+
+
+Sit on the right side of the order book.
+
+
+Liability traders act as market takers.
+
+
+Fines and Enforcement
+Fines are actively enforced.
+
+
+Most teams lose due to:
+
+
+Role confusion
+
+
+Directional bias
+
+
+Inventory mismanagement
+
+
+Overtrading or delayed liquidation
+
+
+First filter to beat the field: incur zero fines.
+
+4. APIs and System Architecture
+Available APIs
+Client REST API
+
+
+Simplest
+
+
+Suitable for basic execution logic
+
+
+DMA API
+
+
+More advanced
+
+
+Faster, lower-level market access
+
+
+APIs forward transactions directly to the RIT server.
+
+
+Core Algorithmic Workflow
+Fetch market data
+
+
+Process state and constraints
+
+
+Make decision
+
+
+Execute via POST request
+
+
+Monitor fill and inventory state
+
+
+Repeat continuously
+
+
+Execution Speed Note
+Default Python templates use sleep() to pace execution.
+
+
+Instructor noted a faster approach:
+
+
+Continuously poll API endpoints
+
+
+React immediately upon fill confirmation
+
+
+Advantage: lower latency than teams relying on fixed sleep intervals.
+
+
+
+5. Top-Down Strategy Framework (Mandatory)
+Every strategy must explicitly answer:
+Who am I in this market?
+ Role definition
+
+
+What is my objective?
+ Execution goal, not price prediction
+
+
+Where does profit come from?
+ Spread, arbitrage, or fee differentials
+
+
+What are the risks?
+ Liquidity, inventory, fines, execution
+
+
+How are risks mitigated?
+ Rules, limits, automation logic
+
+
+Technical implementation is subordinate to this framework.
+
+6. Liability Trading Case (LTB)
+Role Definition
+You are not a market maker.
+
+
+You are not a speculator.
+
+
+You are a market taker executing arbitrage.
+
+
+Profit Source
+Accept up to 5 tender offers per simulation.
+
+
+Compare tender price to current market prices.
+
+
+Profit arises from immediate arbitrage into the market.
+
+
+Decision Logic
+Evaluate:
+
+
+Tender price vs VWAP
+
+
+Tender price vs best bid or ask
+
+
+Accept only if:
+
+
+Market can absorb liquidation profitably
+
+
+Fees do not erase edge
+
+
+Execution Best Practice
+Upon accepting a tender:
+
+
+Liquidate immediately
+
+
+Do not warehouse inventory
+
+
+Recommendation: flatten position as fast as possible.
+
+
+Liquidity Considerations
+Market depth varies by simulation.
+
+
+Key questions:
+
+
+How many units can be sold without exhausting the book?
+
+
+What is slippage risk?
+
+
+Robust strategies must perform across multiple liquidity regimes.
+
+
+Important Rule
+Do not click decline immediately.
+
+
+Tender remains available for ~30 seconds.
+
+
+Market conditions may shift into profitability during that window.
+
+
+
+7. Market Making Case
+Role Definition
+You are a liquidity provider.
+
+
+You must remain inventory-neutral.
+
+
+Objective
+Capture the bid-ask spread repeatedly.
+
+
+Buy lower, sell higher.
+
+
+Avoid directional exposure.
+
+
+Core Requirements
+Continuous quoting
+
+
+Balanced inventory
+
+
+Fee-aware execution
+
+
+Inventory Management
+Central to success.
+
+
+A good market maker:
+
+
+Keeps inventory near zero
+
+
+Dynamically adjusts quotes to rebalance
+
+
+Biased inventory equals hidden speculation.
+
+
+Risks
+Inventory risk
+
+
+Even-trade penalties
+
+
+Liquidity risk
+
+
+Fee drag
+
+
+Competitive pressure from other market makers
+
+
+Implementation Requirement
+Manual trading is not viable.
+
+
+Algorithmic execution is mandatory.
+
+
+Game theory matters:
+
+
+Other market makers adapt
+
+
+Quote competition is real
+
+
+
+8. Practice Server Strategy
+Why Practice Matters
+Each run has a unique random path.
+
+
+Exposure to many scenarios builds robustness.
+
+
+Practice reveals:
+
+
+Hidden fine triggers
+
+
+Liquidity edge cases
+
+
+Latency bottlenecks
+
+
+How to Practice Correctly
+Run full simulations end-to-end.
+
+
+Log:
+
+
+Fines
+
+
+Inventory peaks
+
+
+Execution delays
+
+
+Iterate until:
+
+
+Zero fines
+
+
+Stable performance across runs
+
+
+
+9. GenAI Usage Guidelines
+Use GenAI as an intern, not a decision-maker.
+
+
+Appropriate uses:
+
+
+Logic validation
+
+
+Edge case identification
+
+
+Code cleanup
+
+
+You must fully understand:
+
+
+Assumptions
+
+
+Risks
+
+
+Failure modes
+
+
+Poor prompting reflects poor top-down thinking
+
+rough notes
+
+Liability Trading Case
+Every strategy must explicitly answer:
+Who am I in this market?
+ Role definition
+Liability trader at an investment bank facilitating institutional orders.
+
+
+What is my objective?
+ Execution goal, not price prediction
+Make profit only on the spread between the tender offer price and the institutional price, while facilitating institutional orders.
+Where does profit come from?
+ Spread, arbitrage, or fee differentials
+Comes from the difference between market price and the price offered by the institution. Also known as liquidity spread.
+
+
+What are the risks?
+ Liquidity, inventory, fines, execution
+4 types of penalties:
+Front-Running: you see the tender offer, and trade in the market before you have accepted the offer (insider trading)
+Solution: Always trade after a tender offer has been accepted. Never outside of when you have an open position from accepting the tender offer.
+Market Maker Activity: No making profits off the bid and ask.
+Solution: make sure correct algo is connected via API. Separate scripting logic for liability trading and market making algo.
+Speculation: Random trades which are trying to predict which side the market is going.
+Solution: Avoid it completely. Only trade to cover the accepted tender offer positions. 
+End of Session Uncovered position -> $1 per share fine for any outstanding shares at the end of the 300 second simulation.
+Solution: Add logic to the script that closes all outstanding positions 5 seconds before the end of the session. Accepting a small loss on these positions is fine because it is better than getting the fine.
+Liquidity risk -> your orders are not filled
+Market risk -> market goes against you after you have accepted tender offer
+
+
+How are risks mitigated?
+ Rules, limits, automation logic
+For fines, make sure that algo is only trading within the constraints of the case (after a tender offer has been accepted), it has a flattening function to close all open positions before end of simulation
+For liquidity risk -> entry rule to accept the offer form institution, are there are certain number greater than that on the opposite side available in the market?
+For market risk -> key assumption we don’t knwo where teh market will go, and we are not trying to predict it, we will base the accepting of the offer on the current liquidity spread between the order and the liquidity spread, and use trailing stop loss logic to maximize profit, we will also wait for teh entire 30 seconds to determine if the offer is worth taking or not
+
+Market Making Case
+Every strategy must explicitly answer:
+Who am I in this market?
+ Role definition
+Algoritmic market maker
+
+
+What is my objective?
+ Execution goal, not price prediction
+Must provide liquidity in the market, and also aim to earn profit from the spread. Maintain market neutral position irrespective of direction.
+
+
+Where does profit come from?
+ Spread, arbitrage, or fee differentials
+Two sources: the spread, bought at the bid and sold at the ask and vice versa. Secondly: from the fees gained by being a market maker and providing liquidity
+
+
+What are the risks?
+ Liquidity, inventory, fines, execution
+Challenge: Stay in the market and keep a neutral positions
+Inventory risk, penalty risk, liquidity risk
+Others behaviour -> also need to account for what other people are doing in the market and respond to that
+
+
+How are risks mitigated?
+ Rules, limits, automation logic
+Need to brainstorm more on this and understand the trading logic, start from teh basic algo
+
+
+Beofre strating the algo when coming back, re read the cases one mor etime and see if you discover any more insights, then start with coding the LT3 algo first, connect va API and run some tests, and also eat meanwhile -> 12 to 1
+
+
+Testing login (Liability Trading Case)
+Username: RS_Testing
+Password: 
+
+Order Book
+
+Left side -> Highest price someone is willing to buy at
+Right side -> Lowest price someone is willing to sell at
+
+Best prices are at the top
+
+Make sure exposure never exceeds he maximum amount
+
+Don’t trade outside of the tender offers, wait to accept the tender offer, and then do your trade. No front-running
+
+Workplace is saved, so then we can just load up the same file so that both teammates have both
+
+Limit order in the market can be annoying, market is moving, you are too slow
+
+Fast order -> toggle to on, put the volume, O means one cent better than what they are giving you
+
+Then you can click on the order book to place your order, depending on what side you put it on it wil be a buy or a sell, be careful with outstanding limit orders
+
+(right click)
+
+If I click on the left side -> sell market order gets opened
+If I click on the right side -> Buy market order gets opened
+
+For Buying limit order, left click on the right side
+Selling limit order, left click on the left side
+
+(limit and market order is opposite)
+
+Kill all orders -> closes all unfilled limit orders
+
+Only use either excel or python -> using python
+
+Connecting the script -> press on API at the bottom, Use the Client Rest API, most reliable
+
+Port -> Local doorway for communication
+API Key -> Use any API key you wnat, make sure it matches in the script
+
+Open interactive API link
+
+Make sure you are within the rate limit
+
+The functions are all on the Rest API documentation
+
+Modify the base template, and see where it messes up, how to improve it.
+
+Now the top down approach, write down the logic, then the technical details are just a tool.
+
+Liability Trading Notes:
+Compare market price to offer, compare to market capacity, cove the position as fast as possible.
+
+Institution wants to sell, You are buying (long position) -> look at the left side of the order book to see the buyers, make money if the market price is higher than the institutional price
+
+Institution wants to buy, You are selling (short position) -> look at the right side of the order book to see the sellers, make money if you can buy back shares at a lower price than you originally sold for
+
+Volume Weighted Average Price compare it to the Price offered by the institution 
+
+And also check the liquidity -> how many shares are being traded? How many shares are available in the market opposite to your position (Order book)
+
+Buying: Institution Offer < VWAP
+Selling: Institution Offer > VWAP 
+
+Fines 
+
+Front-Running: you see the tender offer, and trade in the market before you have accepted the offer (insider trading)
+Solution: Always trade after a tender offer has been accepted. Never outside of when you have an open position from accepting the tender offer.
+Market Maker Activity: No making profits off the bid and ask.
+Solution: make sure correct algo is connected via API. Separate scripting logic for liability trading and market making algo.
+Speculation: Random trades which are trying to predict which side the market is going.
+Solution: Avoid it completely. Only trade to cover the accepted tender offer positions. 
+End of Session Uncovered position -> $1 per share fine for any outstanding shares at the end of the 300 second simulation.
+Solution: Add logic to the script that closes all outstanding positions 5 seconds before the end of the session. Accepting a small loss on these positions is fine because it is better than getting the fine.
+
+Potential logic:
+
+Accept the tender offer if there is a certain price differential between VWAP and institutional order. And second condition is check how many orders are there in the market, if the number is greater by a certain amount , then accept the offer. 
+
+Once accepted wait to cover positions -> this could be the main profit making logic -> Think of it like a trailing take profit and stop loss logic, 
+
+According to the conditions that we entered in, we are already in atleast a small profit as soon as we have entered. 
+
+Now we need to maximize the profit using the trailing stop loss logic -> keep the minimum amount (if price moves up, keep on trailing the stop loss by 0.05 cents or something like that) -> compared to VWAP, and also keep checking the liquidity in the market -> ensure that number of available shares are greater than the number of shares that our position contains. 
+
+Basic idea: ensure small profits at minimum, avoid fines at all cost, not trying to predict any thing, like only act on what is present right now (don’t accept any orders which have a negative price differential) -> it is 50-50 if that will come back into the money, avoid that risk completely
+
+Additional logic: wait for the entire 30 seconds -> see the differential between the offer and the current VWAP, if at any point, we see it go above our threshold, we will accept, don’t decline, the opportunity might come in later
+
+The advantage is that we are focusing on the 3-5 average runs, not trying to maximizing the profit in one run. 
+
+If average aggregate profit is very high, no fines, we wil beat most of the people. 
+
+Note: limit orders can be dangerous if they are left unfilled, 
+
+Market takers vs market maker -> Market maker is using the limit orders, the market taker and the market maker sides are opposit -> review the direction the right and left side logic, be careful which side you are using -> this is a crucial distinction
+
+Algorithmic Trading Case:
+
+Goal: Provide market liquidity, part of the order flow, you are using an algorithm (market marker)
+
+Not predicting the direction 
+
+Key challenge: Maintain neutrality in the market 
+
+How much risk are you willing to carry? For how long?
+
+There is no guarantee that the market will come back into your favour (50-50)
+
+Inventory management is alos important in this case -> Net position should stay close to zero, corrects uneven trading balance
+Profit sources:
+Capturing the spread -> Buy lower price, selling higher price
+Fee and rebids -> you will get fees
+
+Challenge: Stay in the market and keep a neutral positions
+
+Inventory risk, penalty risk, liquidity risk
+
+Others behaviour -> also need to account for what other people are doing in the market and respond to that
+
+Must use the API
+
+**More deeper dive is required for the algorithmic market making case
+
+
+Liability trading lab -> situation is a little different, less liquidity
+
+Start with the base algo, and think of the potential logic -> optimize for best average profit
+
+Me -> providing logic, and top down approach, ChatGPT -> Validation, additional ideas, and prompting, Microsoft Copilot -> writes the scripts (provide the API)  Rotman Interactive Trader -> Run the trading simulation at least 3 times on one iteration -> record the average results
+
+Also important point -> Use a test script and the main script logic, ensure that the code which was working before is not sacrificed for trying to get better
+
+Goal is to get no fines, conservatively keep on getting profits
+
+At the end -> run the best two codes 3-4 times against each other and record the results -> Get Michael on call and simultaneously run the strategies -> figure out what is working, save the two main files and that is it
+
+Think about bull, bear market, or more volatile, what happens.
+Sleep function logic: 
+Lt3 case, instead of using sleep function, avoid this kind of latency, constantly fetching own positions form the market, previous transactions has been fulfilled, check if it has been done, hen can do the backswp, avoiding the sleep function all together so that you don’t have that disadvantage -> test this out and write the code for that as well.
+
+Do your own exploration, make -> add whatever you want to make an LT3 case algo
+
+
+
+

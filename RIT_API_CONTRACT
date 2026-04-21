@@ -1,0 +1,311 @@
+RIT CLIENT REST API – CONTRACT SUMMARY (LT3 / ALGO USE)
+
+API Version: 1.0.3
+Base URL: http://localhost:9999/v1
+Swagger Spec: https://rit.306w.ca/RIT-REST-API/1.0.3/swagger.yaml
+
+1. API SCOPE & CONNECTION MODEL
+
+This document describes the Client REST API, not the DMA REST API.
+
+The Client REST API connects to the RIT Client, not the Instructor App.
+
+RIT Client must be running locally for any request to succeed.
+
+Responses are always JSON.
+
+2. AUTHENTICATION (MANDATORY)
+
+Every request must include a valid API key.
+
+The API key can be provided in either of the following ways:
+
+HTTP header (preferred):
+
+X-API-Key: <API_KEY>
+
+
+Query parameter:
+
+?key=<API_KEY>
+
+
+Requests without a valid API key return HTTP 401 Unauthorized.
+
+3. RESPONSE & ERROR SEMANTICS
+
+Successful requests: HTTP 200
+
+Client / server errors: HTTP 4xx–5xx
+
+All responses are JSON objects.
+
+4. RATE LIMITING (CRITICAL)
+
+Some endpoints are rate-limited (as indicated in the documentation).
+
+When rate limits are exceeded:
+
+HTTP 429 RATE_LIMIT_EXCEEDED
+
+Response includes:
+
+Retry-After HTTP header (seconds to wait)
+
+wait field in response body
+
+Important Clarifications
+
+In addition to global rate limits, individual securities may have more restrictive limits.
+
+The Client REST API rejects excess requests.
+
+The Excel VBA API queues requests, but this REST API does not.
+
+Code must explicitly sleep and retry after the specified wait time.
+
+5. PARAMETER PASSING RULES (COMMON FAILURE POINT)
+
+DO NOT send JSON request bodies for trading endpoints.
+
+All parameters are passed via query parameters, as defined in the Swagger spec.
+
+Example (Correct)
+POST /orders?ticker=CRZY&type=MARKET&quantity=100&action=SELL
+
+Example (Incorrect)
+{
+  "ticker": "CRZY",
+  "type": "MARKET",
+  "quantity": 100,
+  "action": "SELL"
+}
+
+6. CORE ENDPOINTS USED IN LT3
+GET /case
+
+Returns information about the current simulation.
+
+Used to:
+
+Detect current period and tick
+
+Determine when the simulation is nearing completion
+
+Trigger forced position flattening
+
+GET /trader
+
+Returns trader identity and current NLV.
+
+GET /limits
+
+Returns portfolio-level trading limits for the current case.
+
+Fields include:
+
+gross, gross_limit, gross_fine
+
+net, net_limit, net_fine
+
+Important:
+
+Limits are case-wide, not per security.
+
+Always enforce limits using this endpoint.
+
+GET /securities
+
+Returns all securities and current positions.
+
+Important fields:
+
+ticker (case-sensitive)
+
+position
+
+vwap
+
+last, bid, ask
+
+trading_fee
+
+min_trade_size, max_trade_size
+
+quoted_decimals
+
+is_tradeable, is_shortable
+
+Used to:
+
+Check exposure
+
+Validate trade sizes
+
+Inspect fees and execution constraints
+
+GET /securities/book?ticker=XXX
+
+Returns the current order book for a security.
+
+Official documentation shows:
+
+{
+  "bid": [...],
+  "ask": [...]
+}
+
+
+Important:
+
+Some RIT client versions may return bids / asks.
+
+Code must defensively handle both naming conventions.
+
+Used to:
+
+Measure liquidity
+
+Compute VWAP
+
+Validate unwind feasibility
+
+GET /orders
+
+Returns all orders, filtered by status (default: OPEN).
+
+POST /orders
+
+Submits a new order.
+
+Query parameters:
+
+ticker (required)
+
+type = MARKET or LIMIT (required)
+
+quantity (required)
+
+action = BUY or SELL (required)
+
+price (required only if type = LIMIT)
+
+dry_run (optional, MARKET only)
+
+Important:
+
+dry_run simulates execution without placing the order.
+
+Useful for liquidity checks without creating exposure.
+
+GET /orders/{id}
+
+Returns details of a specific order.
+
+DELETE /orders/{id}
+
+Cancels an open order.
+
+POST /commands/cancel
+
+Bulk cancel open orders.
+
+Exactly one query parameter must be specified:
+
+all=1
+
+ticker=CRZY
+
+ids=1,2,3
+
+query=<SQL-like filter>
+
+Used to:
+
+Clean up unfilled limit orders
+
+Prevent end-of-session penalties
+
+GET /tenders
+
+Returns all active institutional tenders.
+
+Fields include:
+
+tender_id
+
+quantity
+
+price
+
+action (BUY or SELL from institution)
+
+expires
+
+caption
+
+is_fixed_bid
+
+Important:
+
+Ticker is not a structured field.
+
+The ticker must be parsed from the caption text.
+
+POST /tenders/{id}
+
+Accepts a tender.
+
+price query parameter is required only if the tender is not fixed-bid.
+
+No market trading is permitted before this endpoint is called.
+
+DELETE /tenders/{id}
+
+Declines a tender.
+
+7. LT3 BEHAVIORAL CONSTRAINTS (API-RELEVANT)
+
+No market trades are permitted before tender acceptance.
+
+All trades must be directly linked to unwinding tender exposure.
+
+Prefer MARKET orders for certainty.
+
+Limit orders must be aggressively priced and actively managed.
+
+All open orders must be cancelled if no longer needed.
+
+All positions must be flattened before simulation end to avoid fines.
+
+8. COMMON IMPLEMENTATION ERRORS TO AVOID
+
+Sending JSON bodies instead of query parameters
+
+Assuming tender objects contain a ticker field
+
+Ignoring /limits
+
+Leaving unfilled limit orders open
+
+Assuming queued behavior for REST requests
+
+Trading outside accepted tender exposure
+
+9. INTENDED HIGH-LEVEL USAGE FLOW
+
+Poll /tenders
+
+Evaluate profitability via /securities/book
+
+Check portfolio limits via /limits
+
+Accept tender using /tenders/{id}
+
+Unwind exposure via /orders
+
+Monitor simulation state via /case
+
+Cancel orders and flatten positions before end
+
+END OF CONTRACT

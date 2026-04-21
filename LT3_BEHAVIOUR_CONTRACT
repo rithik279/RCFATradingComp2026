@@ -1,0 +1,11 @@
+LT3 LIABILITY TRADING – NON-NEGOTIABLE RULES
+
+1. NO trading unless a tender has been accepted.
+2. NO front-running or pre-hedging.
+3. NO market making behavior.
+4. Only unwind accepted tender inventory.
+5. Prefer small losses over fines.
+6. Always flatten before end of simulation.
+7. Use immediate market or marketable-limit orders only.
+8. VWAP and liquidity checks must be based on current book only.
+9. Do not use OHLC, TAS, or historical prediction.
