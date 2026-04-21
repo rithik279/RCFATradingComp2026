@@ -9,7 +9,7 @@ Algorithmic trading strategies developed for the **Rotman Finance Lab Interactiv
 The RIT Trading Case Competition involved 26 teams, each running algorithmic trading strategies on a simulated market platform. Final rankings were based on aggregate and average performance across multiple simulation runs.
 
 **Team Members:**
-- Rithik Karir
+- Rithik Singh
 - Michael Xu
 
 ---
