@@ -1,6 +1,6 @@
 # RCFATradingComp2026
 
-Algorithmic trading strategies developed for the **Rotman Finance Lab Interactive Trader (RIT) Trading Case Competition**, where our team placed **4th overall**.
+Algorithmic trading strategies developed for the **Rotman Finance Lab Interactive Trader (RIT) Trading Case Competition**, where our team placed **4th overall** out of 26 teams.
 
 ---
 
@@ -11,6 +11,46 @@ The RIT Trading Case Competition involved 26 teams, each running algorithmic tra
 **Team Members:**
 - Rithik Singh
 - Michael Xu
+
+---
+
+## Getting Started
+
+### 1. Platform Setup
+
+Before running these algorithms, you need to set up the RIT Market Simulator:
+
+1. **Install RIT Client** — Download from the [Rotman Finance Lab](https://www.rotman.utoronto.ca/faculty-and-research/education-labs/bmo-financial-group-finance-research-and-trading-lab/rit-market-simulator/rit-demo--tutorials/)
+2. **Connect to Server** — Set Server IP to `flserver.rotman.utoronto.ca` (port 10000)
+3. **Configure API** — Enable the Client REST API in the RIT client and note your API key
+
+### 2. Install Dependencies
+
+```bash
+pip install requests
+```
+
+### 3. Configure Scripts
+
+Edit the `CONFIG` dict at the top of each script with your setup:
+
+```python
+CONFIG = {
+    "base_url": "http://localhost:9999/v1",  # Default local API URL
+    "api_key": "your-api-key",               # Your RIT API key
+    "case": "LT3"                            # LT3 or ALGO2e depending on case
+}
+```
+
+### 4. Run
+
+```bash
+# Liability Trading Case
+python liability_trading/scripts/liability_trader.py
+
+# Market Making Case
+python market_making/scripts/algo2e_trader_v1.py
+```
 
 ---
 
@@ -32,7 +72,7 @@ Every strategy follows a mandatory top-down framework:
 
 ## Cases Implemented
 
-### 1. Liability Trading Case (LTB)
+### 1. Liability Trading Case (LTB/LT3)
 
 **Role:** Market taker executing arbitrage.
 
@@ -69,27 +109,26 @@ Every strategy follows a mandatory top-down framework:
 
 ---
 
-## Technical Architecture
+## Repository Structure
 
-### API Integration
-- **Client REST API** for order execution and market data retrieval
-- Continuous polling for low-latency execution (vs. fixed sleep intervals)
-- Separate scripts for liability trading and market making to prevent mode confusion
-
-### Key Files
-
-| File | Description |
-|------|-------------|
-| `liability_trader*.py` | Liability trading case — iterative versions showing strategy refinement |
-| `lt3_liability_trader*.py` | Early liability trading implementations with various strategy approaches |
-| `algo2e_trader*.py` | Market making case — VWAP-hybrid and edge-weighted strategies |
-| `lt3_market_utils.py` | Shared market utility functions |
-| `RIT_API_CONTRACT` | API endpoint documentation |
-| `LT3_BEHAVIOUR_CONTRACT` | Case-specific behavior rules |
-
-### Dependencies
 ```
-requests
+RCFATradingComp2026/
+├── docs/                          # API contracts, case documentation
+│   ├── RIT_API_CONTRACT           # REST API endpoint reference
+│   ├── LT3_BEHAVIOUR_CONTRACT     # Case-specific rules
+│   └── roughCaseNotes.txt         # Development notes
+│
+├── liability_trading/             # Liability Trading Case
+│   ├── base/                      # Base algorithm template
+│   ├── scripts/                   # Production-ready versions (v1-v5)
+│   ├── experiments/               # Prototype/iteration versions
+│   └── utils/                     # Shared utilities
+│
+├── market_making/                  # Market Making Case
+│   └── scripts/                   # Algorithm versions
+│
+├── reflection/                     # Competition reflection
+└── workspace/                      # RIT workspace files
 ```
 
 ---
@@ -101,6 +140,12 @@ requests
 3. **Wait the full 30-second window** before declining tender offers — conditions can shift into profitability
 4. **Separate algorithms per case** to avoid market maker vs. liability trader mode confusion
 5. **Average aggregate performance** across multiple runs matters more than maximizing any single run
+
+---
+
+## License
+
+This project is licensed under the MIT License - see [LICENSE](LICENSE) for details.
 
 ---
 
